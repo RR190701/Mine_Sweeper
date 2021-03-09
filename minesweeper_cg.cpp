@@ -1,3 +1,13 @@
+
+
+/**********************************************************
+
+Rashika Rawat
+MINESWEEPER
+
+***********************************************************/
+
+
 #include<bits/stdc++.h>
 #include<windows.h>
 #include <GL/glut.h>
@@ -5,13 +15,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include<iostream>
+using namespace std;
 
 class Painter{
 
 public:
     enum {
-    cellWidth = 15,
-    cellHeight=15
+    cellWidth =20,
+    cellHeight=20
     };
     void drawCloseField(int x,int y);
     void drawOpenField(int x,int y,int mine_count_around);
@@ -95,7 +106,7 @@ private :
                 }
 
 
-            glRasterPos2f( x* cellWidth+2.5,(y+1)*cellHeight-2);
+            glRasterPos2f( x* cellWidth+ cellWidth/4,(y+1)*cellHeight- cellHeight/4);
 
             glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + mine_count_around);
         }
@@ -151,6 +162,7 @@ private :
         glEnd();
     }
 
+
     void Painter::drawOpenedField(int x,int y){
 
      glColor3f(0.6f,0.6f,0.6f);
@@ -178,10 +190,14 @@ class Game {
 
 public:
 
+    bool gameDone=false;
+    int Moves = 15*15 - 40;
+
     enum {
-        WIDTH=9,
-        HEIGHT=9,
-        MINES=9
+        WIDTH=15,
+        HEIGHT=15,
+        MINES=40
+
     };
      enum State {
 
@@ -238,7 +254,21 @@ for(int i=1;i<=MINES;i++){
 Painter p;
 void Game::Draw (){
 
+        if(Moves==0||gameDone){
+                if(Moves>0)
+                cout<<"\n!!!!!!!!!!!!  STEPED on MINE  !!!!!!!!!!!";
+                else
+                cout<<"*********** YOU WON YAY!!!!! *************";
 
+     cout<<"\n!!!!!!!!!!!!!!!!!  GAME IS OVER  !!!!!!!!!!!!!!!!!!";
+    cout<<"\n/*********** click anywhere to exit ************/\n";
+
+
+}
+
+else{
+
+}
 
     for(int x=0;x<WIDTH;x++){
         for(int y=0;y<HEIGHT; y++){
@@ -251,10 +281,9 @@ void Game::Draw (){
                 case OPEN:
                     if(!field[x][y].hasMine){
 
+                    int mine_count= mineCounter(x,y);
+                    p.drawOpenField(x,y,mine_count);
 
-
-                                         int mine_count= mineCounter(x,y);
-                                       p.drawOpenField(x,y,mine_count);
                     }
                     else {
                             p.drawMine(x,y);
@@ -272,20 +301,19 @@ void Game::Draw (){
 
         } }
 
+
+
 }
 
 void Game::openUntil(int x,int y){
 
-
- std::cout<<x<<" "<<y;
-std::cout<<"\n";
 
 if(field[x][y].hasMine)
     return;
 
 int mine_count= mineCounter(x,y);
 
-
+Moves--;
     field[x][y].state=OPEN;
 
     if(mine_count==0){
@@ -293,21 +321,54 @@ int mine_count= mineCounter(x,y);
 
 
 
-			if ((x+1) >=0 && (x+1) < WIDTH && y >=0 && y< HEIGHT)
+			if ((x-1) >=0 && (x-1) < WIDTH && y >=0 && y< HEIGHT && field[x-1][y].state==CLOSED)
 			{
-				if (field[x+1][y].hasMine == false)
-				openUntil(x+1,y);
+			    if(!field[x+1][y].hasMine)
+				openUntil(x-1,y);
 			}
 
 
+			if ((x+1) >=0 && (x+1) < WIDTH && y >=0 && y< HEIGHT && field[x+1][y].state==CLOSED)
+			{
+			    if(!field[x+1][y].hasMine)
+				openUntil(x+1,y);
+			}
 
+			if ((x-1) >=0 && (x-1) < WIDTH && (y+1) >=0 && (y+1) < HEIGHT && field[x-1][y+1].state==CLOSED)
+			{
+			    if(!field[x+1][y+1].hasMine)
+				openUntil(x-1,y+1);
+			}
 
+			if ((x+1) >=0 && (x+1) < WIDTH && (y+1)  >=0 && (y+1) < HEIGHT && field[x+1][y+1].state==CLOSED)
+			{
+			    if(!field[x+1][y+1].hasMine)
+				openUntil(x+1,y+1);
+			}
+			if ((x-1) >=0 && (x-1) < WIDTH && (y-1)  >=0 && (y-1)< HEIGHT && field[x-1][y-1].state==CLOSED)
+			{
+			    if(!field[x+1][y-1].hasMine)
+				openUntil(x-1,y-1);
+			}
+
+			if ((x+1) >=0 && (x+1) < WIDTH && (y-1) >=0 && (y-1)< HEIGHT && field[x+1][y-1].state==CLOSED)
+			{
+			    if(!field[x+1][y-1].hasMine)
+				openUntil(x+1,y-1);
+			}
+			if ((x) >=0 && (x) < WIDTH && (y-1) >=0 && (y-1)< HEIGHT && field[x][y-1].state==CLOSED)
+			{
+			    if(!field[x][y-1].hasMine)
+				openUntil(x,y-1);
+			}
+
+			if ((x) >=0 && (x) < WIDTH && (y+1) >=0 && (y+1)< HEIGHT && field[x][y+1].state==CLOSED)
+			{
+			    if(!field[x][y+1].hasMine)
+				openUntil(x,y+1);
+			}
 
     }
-
-
-
-
 
 
 }
@@ -344,15 +405,23 @@ int Game:: mineCounter(int x,int y){
 
 void Game::open(int x,int y){
 
+if(gameDone||Moves==0){
+
+
+    exit(0);
+
+}
+
 if(field[x][y].hasMine){
 
     Expose();
+    gameDone=true;
+
 
 }
-else{
+if(field[x][y].state == CLOSED){
 
-    openUntil(x,y);
-
+        openUntil(x,y);
 }
 
 }
@@ -415,7 +484,7 @@ int main(int argc, char** argv){
     glutInitWindowSize(Game::HEIGHT*Painter::cellWidth,Game::WIDTH*Painter::cellHeight);
     glutInitWindowPosition(700,300);
 
-    glutCreateWindow("Mine Sweeper");
+    glutCreateWindow("MineSweeper");
     glClearColor(0,0,0,1);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
